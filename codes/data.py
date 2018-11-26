@@ -102,7 +102,8 @@ class Dataset(object):
       X_pret = np.array(xs, dtype=np.int64)
 
     # (batch, thread_len)
-    ys_sdqc = [[tweet for tweet in thread] + [0] * max_branch_length
+    ys_sdqc = [[tweet for tweet in thread] +
+               [0] * (max_branch_length - len(thread))
                for thread in ys_sdqc]
 
     X = np.array(xs, dtype=np.int64)
