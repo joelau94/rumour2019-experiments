@@ -1,6 +1,9 @@
 import cPickle as pkl
 import os
 
+import tensorflow as tf
+import numpy as np
+
 import data
 import models
 import utils
