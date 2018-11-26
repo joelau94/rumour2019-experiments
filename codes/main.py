@@ -32,6 +32,7 @@ def main():
                       default=[256, 256])
   parser.add_argument('--branch-hidden-dims', type=int, nargs='+',
                       default=[256, 256])
+  parser.add_argument('--attn-dim', type=int, default=256)
 
   parser.add_argument('--seed', type=int, default=23)
   parser.add_argument('--lr', type=float, default=0.1)
@@ -72,6 +73,7 @@ def main():
         'embed_dim': args.embed_dim,
         'sent_hidden_dims': args.sent_hidden_dims,
         'branch_hidden_dims': args.branch_hidden_dims,
+        'attn_dim': args.attn_dim,
 
         'seed': args.seed,
         'lr': args.lr,

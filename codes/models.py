@@ -56,18 +56,18 @@ class Embeddings(object):
 class SelfAttn(object):
   """SelfAttn"""
 
-  def __init__(self, reuse=True):
+  def __init__(self, attn_dim, reuse=True):
+    self.attn_dim = attn_dim
     self.reuse = reuse
 
   def __call__(self, hidden_tape, masks):
     """
     hidden_tape: (batch, len, dim)
     """
-    hidden_dim = tf.shape(hidden_tape)[-1]
 
     with tf.variable_scope('SelfAttn', reuse=self.reuse):
-      q = tf.layers.dense(hidden_tape, units=hidden_dim, name='q')
-      k = tf.layers.dense(hidden_tape, units=hidden_dim, name='k')
+      q = tf.layers.dense(hidden_tape, units=self.attn_dim, name='q')
+      k = tf.layers.dense(hidden_tape, units=self.attn_dim, name='k')
       v = hidden_tape
 
       normalizer = tf.rsqrt(tf.to_float(tf.shape(q)[-1]))
@@ -139,12 +139,12 @@ class SentEncoder(object):
 class BranchEncoder(object):
   """BranchEncoder"""
 
-  def __init__(self, hidden_dims, keep_prob=1.0, reuse=True):
+  def __init__(self, hidden_dims, attn_dim, keep_prob=1.0, reuse=True):
     self.hidden_dims = hidden_dims
     self.keep_prob = keep_prob
     self.reuse = reuse
 
-    self.context_fn = SelfAttn(reuse=self.reuse)
+    self.context_fn = SelfAttn(attn_dim, reuse=self.reuse)
 
     with tf.variable_scope('BranchEncoder', reuse=self.reuse):
       self.fw_step = self._step(hidden_dims)
@@ -242,6 +242,7 @@ class RumourDetectModel(object):
                vocab_size,
                sent_hidden_dims,
                branch_hidden_dims,
+               attn_dim,
                embed_pret_file=None,
                dicts_file=None,
                keep_prob=1.0,
@@ -258,6 +259,7 @@ class RumourDetectModel(object):
                                     keep_prob=keep_prob,
                                     reuse=self.reuse)
     self.branch_encoder = BranchEncoder(branch_hidden_dims,
+                                        attn_dim,
                                         keep_prob=keep_prob,
                                         reuse=self.reuse)
     self.sdqc_classifier = SdqcClassifier(keep_prob=keep_prob,

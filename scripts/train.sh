@@ -10,6 +10,7 @@ python codes/main.py \
     --embed-dim 300 \
     --sent-hidden-dims 256 256 \
     --branch-hidden-dims 256 256 \
+    --attn-dim 256 \
     --ckpt models/model \
     --max-ckpts 20 \
     --batch-size 16 \

@@ -27,6 +27,7 @@ class Config(object):
         'embed_dim': 300,
         'sent_hidden_dims': [256, 256],
         'branch_hidden_dims': [256, 256],
+        'attn_dim': 256,
 
         'seed': 23,
         'lr': 0.1,
@@ -73,6 +74,7 @@ class Experiment(object):
           vocab_size=self.config['vocab_size'],
           sent_hidden_dims=self.config['sent_hidden_dims'],
           branch_hidden_dims=self.config['branch_hidden_dims'],
+          attn_dim=self.config['attn_dim'],
           embed_pret_file=self.config['embed_pret_file'],
           dicts_file=self.config['dicts_file'],
           keep_prob=self.config['keep_prob'],
@@ -170,6 +172,7 @@ class Experiment(object):
           vocab_size=self.config['vocab_size'],
           sent_hidden_dims=self.config['sent_hidden_dims'],
           branch_hidden_dims=self.config['branch_hidden_dims'],
+          attn_dim=self.config['attn_dim'],
           embed_pret_file=self.config['embed_pret_file'],
           dicts_file=self.config['dicts_file'],
           keep_prob=1.0,
