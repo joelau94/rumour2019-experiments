@@ -95,13 +95,14 @@ class Dataset(object):
     X_pret = None
     if self.has_pret:
       xs_pret = [[tweet + [0] * (max_sent_length - len(tweet))
-           for tweet in thread] + [[0] * max_sent_length] * max_branch_length
-          for thread in xs_pret]
+                  for tweet in thread] +
+                 [[0] * max_sent_length] * max_branch_length
+                 for thread in xs_pret]
       X_pret = np.array(xs, dtype=np.int64)
 
     # (batch, thread_len)
     ys_sdqc = [[tweet for tweet in thread] + [0] * max_branch_length
-          for thread in ys_sdqc]      
+               for thread in ys_sdqc]
 
     X = np.array(xs, dtype=np.int64)
     Y_sdqc = np.array(ys, dtype=np.int64)
@@ -142,6 +143,9 @@ def parse_txt(txtfile):
     for reply in t[1:]:
       replies.append(parse_reply(reply))
     return [[orig] + replies, v]
+
+  if raw.strip() == '':
+    return []
 
   records = [parse_thread(thread) for thread in raw.strip().split('\n\n')]
 
@@ -205,18 +209,33 @@ def index_records(raw_records, dicts):
 
 def preprocess_train(raw_data_file, dicts_file, datafile,
                      embed_pret_file=None, min_freq=2):
+  
   raw_records = parse_txt(raw_data_file)
+  if len(raw_records) < 1:
+    utils.print_log('No records found in {} !'.format(datafile))
+    return
+
   dicts = build_dicts(raw_records, dicts_file, embed_pret_file, min_freq)
 
   records = index_records(raw_records, dicts)
+  utils.print_log('Data: {}\n  {} threads, {} tweets.'.format(
+      datafile, len(records), sum(map(len, records))
+  ))
 
   pkl.dump(records, open(datafile, 'wb'))
 
 
 def preprocess_dev_test(raw_data_file, dicts_file, datafile):
   raw_records = parse_txt(raw_data_file)
+  if len(raw_records) < 1:
+    utils.print_log('No records found in {} !'.format(datafile))
+    return
+
   dicts = pkl.load(open(dicts_file, 'rb'))
 
   records = index_records(raw_records, dicts)
+  utils.print_log('Data: {}\n  {} threads, {} tweets.'.format(
+      datafile, len(records), sum(map(len, records))
+  ))
 
   pkl.dump(records, open(datafile, 'wb'))
