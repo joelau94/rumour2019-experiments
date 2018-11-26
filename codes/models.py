@@ -248,6 +248,7 @@ class RumourDetectModel(object):
                reuse=True):
     self.reuse = reuse
     self.embed_dim = embed_dim
+    self.sent_vec_dim = sent_hidden_dims[-1]
 
     self.embedder = Embeddings(embed_dim, vocab_size, reuse=self.reuse)
     if embed_pret_file:
@@ -287,7 +288,8 @@ class RumourDetectModel(object):
 
     sent_length = tf.reshape(self.sent_length, [-1])
     sent_vecs = self.sent_encoder(word_embeddings, sent_length)
-    sent_vecs = tf.reshape(sent_vecs, [batch_size, thread_max_len, -1])
+    sent_vecs = tf.reshape(sent_vecs,
+                           [batch_size, thread_max_len, self.sent_vec_dim])
 
     sent_vecs = self.branch_encoder(sent_vecs, self.branch_length)
 
