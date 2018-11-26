@@ -108,15 +108,15 @@ class SentEncoder(object):
     """
     word_embeddings: (batch, thread_max_len, sent_max_len, embed_dim)
     """
-    batch_size = tf.shape(word_embeddings)[0]
-    thread_max_len = tf.shape(word_embeddings)[1]
-    sent_max_len = tf.shape(word_embeddings)[2]
-    embed_dim = tf.shape(word_embeddings)[3]
+    # batch_size = tf.shape(word_embeddings)[0]
+    # thread_max_len = tf.shape(word_embeddings)[1]
+    # sent_max_len = tf.shape(word_embeddings)[2]
+    # embed_dim = tf.shape(word_embeddings)[3]
 
-    word_embeddings = tf.reshape(
-        word_embeddings,
-        [batch_size * thread_max_len, sent_max_len, embed_dim])
-    sent_length = tf.reshape(sent_length, [-1])
+    # word_embeddings = tf.reshape(
+    #     word_embeddings,
+    #     [batch_size * thread_max_len, sent_max_len, embed_dim])
+    # sent_length = tf.reshape(sent_length, [-1])
 
     with tf.variable_scope('SentEncoder', reuse=self.reuse):
 
@@ -130,8 +130,8 @@ class SentEncoder(object):
       )
 
       final_states = tf.concat([states[0][-1].h, states[1][-1].h], axis=-1)
-      final_states = tf.reshape(final_states,
-                                [batch_size, thread_max_len, -1])
+      # final_states = tf.reshape(final_states,
+      #                           [batch_size, thread_max_len, -1])
 
       return final_states
 
@@ -247,6 +247,7 @@ class RumourDetectModel(object):
                keep_prob=1.0,
                reuse=True):
     self.reuse = reuse
+    self.embed_dim = embed_dim
 
     self.embedder = Embeddings(embed_dim, vocab_size, reuse=self.reuse)
     if embed_pret_file:
@@ -273,9 +274,19 @@ class RumourDetectModel(object):
     self.sdqc_labels = tf.placeholder(dtype=tf.int64, shape=(None, None))
     self.veracity_labels = tf.placeholder(dtype=tf.int64, shape=(None,))
 
-    word_embeddings = self.embedder(self.word_ids, self.word_ids_pret)
+    batch_size = tf.shape(self.word_ids)[0]
+    thread_max_len = tf.shape(self.word_ids)[1]
+    sent_max_len = tf.shape(self.word_ids)[2]
+
+    word_ids = tf.reshape(self.word_ids,
+                          [batch_size * thread_max_len, sent_max_len])
+    word_ids_pret = tf.reshape(self.word_ids_pret,
+                               [batch_size * thread_max_len, sent_max_len])
+
+    word_embeddings = self.embedder(word_ids, word_ids_pret)
 
     sent_vecs = self.sent_encoder(word_embeddings, self.sent_length)
+    sent_vecs = tf.reshape(sent_vecs, [batch_size, thread_max_len, -1])
 
     sent_vecs = self.branch_encoder(sent_vecs, self.branch_length)
 
