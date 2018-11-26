@@ -138,7 +138,9 @@ def parse_txt(txtfile):
   def parse_thread(t):
     t = t.strip().split('\n')
     v, orig = parse_orig(t[0])
-    replies = parse_reply(t[1:])
+    replies = []
+    for reply in t[1:]:
+      replies.append(parse_reply(reply))
     return [[orig] + replies, v]
 
   records = [parse_thread(thread) for thread in raw.strip().split('\n\n')]
