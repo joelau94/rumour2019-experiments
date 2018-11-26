@@ -285,7 +285,8 @@ class RumourDetectModel(object):
 
     word_embeddings = self.embedder(word_ids, word_ids_pret)
 
-    sent_vecs = self.sent_encoder(word_embeddings, self.sent_length)
+    sent_length = tf.reshape(self.sent_length, [-1])
+    sent_vecs = self.sent_encoder(word_embeddings, sent_length)
     sent_vecs = tf.reshape(sent_vecs, [batch_size, thread_max_len, -1])
 
     sent_vecs = self.branch_encoder(sent_vecs, self.branch_length)
