@@ -125,7 +125,7 @@ def parse_txt(txtfile):
   ...
   """
 
-  raw = open(txtfile, 'r').readlines()
+  raw = open(txtfile, 'r').read()
 
   def parse_orig(l):
     x, y, v = l.strip().split('|||')
