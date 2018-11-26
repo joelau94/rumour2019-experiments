@@ -35,7 +35,7 @@ class Dataset(object):
     self.cursor = 0
 
     self.has_pret = False
-    if len(self.records[0][0]) == 3:
+    if len(self.records[0][0][0]) == 3:
       self.has_pret = True
 
     utils.print_log('{} records loaded.'.format(len(self.records)))
@@ -89,14 +89,15 @@ class Dataset(object):
 
     # (batch, thread_len, sent_len)
     xs = [[tweet + [0] * (max_sent_length - len(tweet))
-           for tweet in thread] + [[0] * max_sent_length] * max_branch_length
+           for tweet in thread] +
+          [[0] * max_sent_length] * (max_branch_length - len(thread))
           for thread in xs]
 
     X_pret = None
     if self.has_pret:
       xs_pret = [[tweet + [0] * (max_sent_length - len(tweet))
                   for tweet in thread] +
-                 [[0] * max_sent_length] * max_branch_length
+                 [[0] * max_sent_length] * (max_branch_length - len(thread))
                  for thread in xs_pret]
       X_pret = np.array(xs, dtype=np.int64)
 
@@ -209,7 +210,7 @@ def index_records(raw_records, dicts):
 
 def preprocess_train(raw_data_file, dicts_file, datafile,
                      embed_pret_file=None, min_freq=2):
-  
+
   raw_records = parse_txt(raw_data_file)
   if len(raw_records) < 1:
     utils.print_log('No records found in {} !'.format(datafile))
