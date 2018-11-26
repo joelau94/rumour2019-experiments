@@ -106,7 +106,7 @@ class Dataset(object):
                for thread in ys_sdqc]
 
     X = np.array(xs, dtype=np.int64)
-    Y_sdqc = np.array(ys, dtype=np.int64)
+    Y_sdqc = np.array(ys_sdqc, dtype=np.int64)
     Y_veracity = np.array(ys_veracity, dtype=np.int64)
     sent_length = np.array(sent_length, dtype=np.int64)
     branch_length = np.array(branch_length, dtype=np.int64)
