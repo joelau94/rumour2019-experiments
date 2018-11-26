@@ -15,5 +15,5 @@ python codes/main.py \
     --max-ckpts 20 \
     --batch-size 16 \
     --max-steps 1000000 \
-    --print-interval 1 \
-    --save-interval 1
+    --print-interval 50 \
+    --save-interval 1000
