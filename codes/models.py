@@ -196,6 +196,7 @@ class SdqcClassifier(object):
     self.predictions = tf.argmax(self.probabilities, axis=-1)
 
     self.loss = tf.contrib.seq2seq.sequence_loss(scores, labels, masks)
+    self.loss = tf.reduce_mean(self.loss)
 
     correct_count = tf.reduce_sum(
         tf.cast(tf.math.equal(self.predictions, labels),
@@ -224,6 +225,7 @@ class VeracityClassifier(object):
 
     self.loss = tf.nn.softmax_cross_entropy_with_logits(
         labels=tf.one_hot(labels, 3, dtype=tf.float32), logits=scores)
+    self.loss = tf.reduce_mean(self.loss)
 
     correct_count = tf.reduce_sum(
         tf.cast(tf.math.equal(self.predictions, labels),
