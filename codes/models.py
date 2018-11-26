@@ -86,7 +86,8 @@ class SelfAttn(object):
 class SentEncoder(object):
   """SentEncoder"""
 
-  def __init__(self, hidden_dims, keep_prob=1.0, reuse=True):
+  def __init__(self, embed_dim, hidden_dims, keep_prob=1.0, reuse=True):
+    self.embed_dim = embed_dim
     self.hidden_dims = hidden_dims
     self.keep_prob = keep_prob
     self.reuse = reuse
@@ -115,7 +116,7 @@ class SentEncoder(object):
 
     word_embeddings = tf.reshape(
         word_embeddings,
-        [batch_size * thread_max_len, sent_max_len, -1])
+        [batch_size * thread_max_len, sent_max_len, self.embed_dim])
     sent_length = tf.reshape(sent_length, [-1])
 
     with tf.variable_scope('SentEncoder', reuse=self.reuse):
@@ -252,7 +253,8 @@ class RumourDetectModel(object):
     if embed_pret_file:
       self.embedder.load_pretrained_emb(embed_pret_file, dicts_file)
 
-    self.sent_encoder = SentEncoder(sent_hidden_dims,
+    self.sent_encoder = SentEncoder(embed_dim,
+                                    sent_hidden_dims,
                                     keep_prob=keep_prob,
                                     reuse=self.reuse)
     self.branch_encoder = BranchEncoder(branch_hidden_dims,
