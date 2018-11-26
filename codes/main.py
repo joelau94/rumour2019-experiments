@@ -19,9 +19,9 @@ def main():
                       default='../data/dev.pkl')
   parser.add_argument('--test-data-file', type=str,
                       default='../data/test.pkl')
-  parser.add_argument('--dicts_file', type=str,
+  parser.add_argument('--dicts-file', type=str,
                       default='../data/dicts.pkl')
-  parser.add_argument('embed_pret_file', type=str,
+  parser.add_argument('--embed-pret-file', type=str,
                       default='../data/glove.6B.300d.txt')
 
   parser.add_argument('--keep-prob', type=float, default=0.9)
