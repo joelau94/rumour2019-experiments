@@ -206,7 +206,7 @@ def index_records(raw_records, dicts):
 def preprocess_train(raw_data_file, dicts_file, datafile,
                      embed_pret_file=None, min_freq=2):
   raw_records = parse_txt(raw_data_file)
-  dicts = build_dicts(records, dicts_file, embed_pret_file, min_freq)
+  dicts = build_dicts(raw_records, dicts_file, embed_pret_file, min_freq)
 
   records = index_records(raw_records, dicts)
 
