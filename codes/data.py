@@ -84,7 +84,7 @@ class Dataset(object):
     max_branch_length = max(branch_length)
 
     # (batch, thread_len)
-    sent_length = [l + [0] * (max_sent_length - len(l))
+    sent_length = [l + [0] * (max_branch_length - len(l))
                    for l in sent_length]
 
     # (batch, thread_len, sent_len)
