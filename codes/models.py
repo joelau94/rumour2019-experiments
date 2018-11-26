@@ -116,9 +116,7 @@ class SentEncoder(object):
     word_embeddings = tf.reshape(
         word_embeddings,
         [batch_size * thread_max_len, sent_max_len, -1])
-    sent_length = tf.reshape(
-        sent_length,
-        [batch_size * thread_max_len, sent_max_len, -1])
+    sent_length = tf.reshape(sent_length, -1)
 
     with tf.variable_scope('SentEncoder', reuse=self.reuse):
 
