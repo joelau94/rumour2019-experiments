@@ -275,7 +275,7 @@ class RumourDetectModel(object):
     self.word_ids_pret = tf.placeholder(dtype=tf.int64,
                                         shape=(None, None, None))
     self.sdqc_labels = tf.placeholder(dtype=tf.int64, shape=(None, None))
-    self.veracity_labels = tf.placeholder(dtype=tf.int64, shape=(None,))
+    self.veracity_labels = tf.placeholder(dtype=tf.int64, shape=(None))
 
     batch_size = tf.shape(self.word_ids)[0]
     thread_max_len = tf.shape(self.word_ids)[1]
