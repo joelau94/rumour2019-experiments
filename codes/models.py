@@ -223,7 +223,7 @@ class VeracityClassifier(object):
     self.predictions = tf.argmax(self.probabilities, axis=-1)
 
     self.loss = tf.nn.softmax_cross_entropy_with_logits(
-        labels=tf.reshape(labels, [-1]), logits=scores)
+        labels=tf.one_hot(labels, 3, dtype=tf.float32), logits=scores)
 
     correct_count = tf.reduce_sum(
         tf.cast(tf.math.equal(self.predictions, labels),
