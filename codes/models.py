@@ -268,7 +268,6 @@ class RumourDetectModel(object):
                                     keep_prob=keep_prob,
                                     reuse=self.reuse)
     self.branch_encoder = BranchEncoder(branch_hidden_dims,
-                                        attn_dim,
                                         keep_prob=keep_prob,
                                         reuse=self.reuse)
     self.sdqc_classifier = SdqcClassifier(sdqc_hidden_dim,
