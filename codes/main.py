@@ -33,6 +33,8 @@ def main():
   parser.add_argument('--branch-hidden-dims', type=int, nargs='+',
                       default=[256, 256])
   parser.add_argument('--attn-dim', type=int, default=256)
+  parser.add_argument('--sdqc-hidden-dim', type=int, default=512)
+  parser.add_argument('--veracity-hidden-dim', type=int, default=512)
 
   parser.add_argument('--seed', type=int, default=23)
   parser.add_argument('--lr', type=float, default=0.1)
@@ -74,6 +76,8 @@ def main():
         'sent_hidden_dims': args.sent_hidden_dims,
         'branch_hidden_dims': args.branch_hidden_dims,
         'attn_dim': args.attn_dim,
+        'sdqc_hidden_dim': args.sdqc_hidden_dim,
+        'veracity_hidden_dim': args.veracity_hidden_dim,
 
         'seed': args.seed,
         'lr': args.lr,

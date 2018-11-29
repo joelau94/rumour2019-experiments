@@ -11,9 +11,11 @@ python codes/main.py \
     --sent-hidden-dims 256 256 \
     --branch-hidden-dims 256 256 \
     --attn-dim 256 \
+    --sdqc-hidden-dim 512 \
+    --veracity-hidden-dim 512 \
     --ckpt models/model \
     --max-ckpts 20 \
-    --batch-size 16 \
+    --batch-size 8 \
     --max-steps 1000000 \
     --print-interval 50 \
     --save-interval 1000

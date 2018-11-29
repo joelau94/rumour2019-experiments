@@ -108,15 +108,6 @@ class SentEncoder(object):
     """
     word_embeddings: (batch, thread_max_len, sent_max_len, embed_dim)
     """
-    # batch_size = tf.shape(word_embeddings)[0]
-    # thread_max_len = tf.shape(word_embeddings)[1]
-    # sent_max_len = tf.shape(word_embeddings)[2]
-    # embed_dim = tf.shape(word_embeddings)[3]
-
-    # word_embeddings = tf.reshape(
-    #     word_embeddings,
-    #     [batch_size * thread_max_len, sent_max_len, embed_dim])
-    # sent_length = tf.reshape(sent_length, [-1])
 
     with tf.variable_scope('SentEncoder', reuse=self.reuse):
 
@@ -130,8 +121,6 @@ class SentEncoder(object):
       )
 
       final_states = tf.concat([states[0][-1].h, states[1][-1].h], axis=-1)
-      # final_states = tf.reshape(final_states,
-      #                           [batch_size, thread_max_len, -1])
 
       return final_states
 
@@ -182,14 +171,20 @@ class BranchEncoder(object):
 class SdqcClassifier(object):
   """SdqcClassifier"""
 
-  def __init__(self, keep_prob=1.0, reuse=True):
+  def __init__(self, hidden_dim, keep_prob=1.0, reuse=True):
+    self.hidden_dim = hidden_dim
     self.keep_prob = keep_prob
     self.reuse = reuse
 
   def __call__(self, sent_vecs, labels, masks):
     with tf.variable_scope('Sdqc', reuse=self.reuse):
       # (batch, len, 4)
-      feats = tf.nn.dropout(sent_vecs, keep_prob=self.keep_prob)
+      hiddens = tf.layers.dense(sent_vecs,
+                                units=self.hidden_dim,
+                                activation=tf.nn.relu,
+                                name='hiddens')
+      hiddens = tf.contrib.layers.layer_norm(hiddens, reuse=self.reuse)
+      feats = tf.nn.dropout(hiddens, keep_prob=self.keep_prob)
       scores = tf.layers.dense(feats, units=4, name='scores')
 
     self.probabilities = tf.nn.softmax(scores, axis=-1)
@@ -210,14 +205,20 @@ class SdqcClassifier(object):
 class VeracityClassifier(object):
   """VeracityClassifier"""
 
-  def __init__(self, keep_prob=1.0, reuse=True):
+  def __init__(self, hidden_dim, keep_prob=1.0, reuse=True):
+    self.hidden_dim = hidden_dim
     self.keep_prob = keep_prob
     self.reuse = reuse
 
   def __call__(self, sent_vecs, labels):
     with tf.variable_scope('Veracity', reuse=self.reuse):
       # (batch, 3)
-      feats = tf.nn.dropout(sent_vecs, keep_prob=self.keep_prob)
+      hiddens = tf.layers.dense(sent_vecs,
+                                units=self.hidden_dim,
+                                activation=tf.nn.relu,
+                                name='hiddens')
+      hiddens = tf.contrib.layers.layer_norm(hiddens, reuse=self.reuse)
+      feats = tf.nn.dropout(hiddens, keep_prob=self.keep_prob)
       scores = tf.layers.dense(feats, units=3, name='scores')
 
     self.probabilities = tf.nn.softmax(scores, axis=-1)
@@ -245,6 +246,8 @@ class RumourDetectModel(object):
                sent_hidden_dims,
                branch_hidden_dims,
                attn_dim,
+               sdqc_hidden_dim,
+               veracity_hidden_dim,
                embed_pret_file=None,
                dicts_file=None,
                keep_prob=1.0,
@@ -264,9 +267,11 @@ class RumourDetectModel(object):
                                         attn_dim,
                                         keep_prob=keep_prob,
                                         reuse=self.reuse)
-    self.sdqc_classifier = SdqcClassifier(keep_prob=keep_prob,
+    self.sdqc_classifier = SdqcClassifier(sdqc_hidden_dim,
+                                          keep_prob=keep_prob,
                                           reuse=self.reuse)
-    self.veracity_classifier = VeracityClassifier(keep_prob=keep_prob,
+    self.veracity_classifier = VeracityClassifier(veracity_hidden_dim,
+                                                  keep_prob=keep_prob,
                                                   reuse=self.reuse)
 
   def __call__(self, is_train=True):
