@@ -128,12 +128,10 @@ class SentEncoder(object):
 class BranchEncoder(object):
   """BranchEncoder"""
 
-  def __init__(self, hidden_dims, attn_dim, keep_prob=1.0, reuse=True):
+  def __init__(self, hidden_dims, keep_prob=1.0, reuse=True):
     self.hidden_dims = hidden_dims
     self.keep_prob = keep_prob
     self.reuse = reuse
-
-    self.context_fn = SelfAttn(attn_dim, reuse=self.reuse)
 
     with tf.variable_scope('BranchEncoder', reuse=self.reuse):
       self.fw_step = self._step(hidden_dims)
@@ -161,23 +159,24 @@ class BranchEncoder(object):
       )
 
       hidden_states = tf.concat(outputs, axis=-1)
-      attn_context = self.context_fn(
-          hidden_states,
-          tf.sequence_mask(branch_length, dtype=tf.float32))
 
-      return tf.concat([hidden_states, attn_context], axis=-1)
+      return hidden_states
 
 
 class SdqcClassifier(object):
   """SdqcClassifier"""
 
-  def __init__(self, hidden_dim, keep_prob=1.0, reuse=True):
+  def __init__(self, hidden_dim, attn_dim, keep_prob=1.0, reuse=True):
     self.hidden_dim = hidden_dim
     self.keep_prob = keep_prob
     self.reuse = reuse
 
+    self.context_fn = SelfAttn(attn_dim, reuse=self.reuse)
+
   def __call__(self, sent_vecs, labels, masks):
     with tf.variable_scope('Sdqc', reuse=self.reuse):
+      attn_context = self.context_fn(sent_vecs, masks)
+      sent_vecs = tf.concat([sent_vecs, attn_context], axis=-1)
       # (batch, len, 4)
       hiddens = tf.layers.dense(sent_vecs,
                                 units=self.hidden_dim,
@@ -205,15 +204,19 @@ class SdqcClassifier(object):
 class VeracityClassifier(object):
   """VeracityClassifier"""
 
-  def __init__(self, hidden_dim, keep_prob=1.0, reuse=True):
+  def __init__(self, hidden_dim, attn_dim, keep_prob=1.0, reuse=True):
     self.hidden_dim = hidden_dim
     self.keep_prob = keep_prob
     self.reuse = reuse
 
-  def __call__(self, sent_vecs, labels):
+    self.context_fn = SelfAttn(attn_dim, reuse=self.reuse)
+
+  def __call__(self, sent_vecs, labels, masks):
     with tf.variable_scope('Veracity', reuse=self.reuse):
       # (batch, 3)
-      hiddens = tf.layers.dense(sent_vecs,
+      attn_context = self.context_fn(sent_vecs, masks)
+      sent_vecs = tf.concat([sent_vecs, attn_context], axis=-1)
+      hiddens = tf.layers.dense(sent_vecs[:, 0, :],
                                 units=self.hidden_dim,
                                 activation=tf.nn.relu,
                                 name='hiddens')
@@ -224,7 +227,7 @@ class VeracityClassifier(object):
     self.probabilities = tf.nn.softmax(scores, axis=-1)
     self.predictions = tf.argmax(self.probabilities, axis=-1)
 
-    self.loss = tf.nn.softmax_cross_entropy_with_logits(
+    self.loss = tf.nn.softmax_cross_entropy_with_logits_v2(
         labels=tf.one_hot(labels, 3, dtype=tf.float32), logits=scores)
     self.loss = tf.reduce_mean(self.loss)
 
@@ -245,7 +248,8 @@ class RumourDetectModel(object):
                vocab_size,
                sent_hidden_dims,
                branch_hidden_dims,
-               attn_dim,
+               sdqc_attn_dim,
+               veracity_attn_dim,
                sdqc_hidden_dim,
                veracity_hidden_dim,
                embed_pret_file=None,
@@ -268,9 +272,11 @@ class RumourDetectModel(object):
                                         keep_prob=keep_prob,
                                         reuse=self.reuse)
     self.sdqc_classifier = SdqcClassifier(sdqc_hidden_dim,
+                                          sdqc_attn_dim,
                                           keep_prob=keep_prob,
                                           reuse=self.reuse)
     self.veracity_classifier = VeracityClassifier(veracity_hidden_dim,
+                                                  veracity_attn_dim,
                                                   keep_prob=keep_prob,
                                                   reuse=self.reuse)
 
@@ -313,10 +319,12 @@ class RumourDetectModel(object):
         self.sdqc_classifier(sent_vecs,
                              self.sdqc_labels,
                              branch_masks)
+
     self.veracity_loss, \
         self.veracity_predictions, \
         self.veracity_probabilities, \
         self.veracity_correct_count, \
         self.veracity_total_count = \
-        self.veracity_classifier(sent_vecs[:, 0, :],
-                                 self.veracity_labels)
+        self.veracity_classifier(sent_vecs,
+                                 self.veracity_labels,
+                                 branch_masks)

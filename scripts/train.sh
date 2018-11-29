@@ -10,10 +10,12 @@ python codes/main.py \
     --embed-dim 300 \
     --sent-hidden-dims 256 256 \
     --branch-hidden-dims 256 256 \
-    --attn-dim 256 \
+    --sdqc-attn-dim 256 \
+    --veracity-attn-dim 256 \
     --sdqc-hidden-dim 512 \
     --veracity-hidden-dim 512 \
     --ckpt models/model \
+    --lr 0.001 \
     --max-ckpts 20 \
     --batch-size 8 \
     --max-steps 1000000 \
