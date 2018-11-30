@@ -258,8 +258,7 @@ class RumourDetectModel(object):
                reuse=True):
     self.reuse = reuse
     self.embed_dim = embed_dim
-    # self.sent_vec_dim = sent_hidden_dims[-1] * 2
-    self.sent_vec_dim = sent_hidden_dims[-1]
+    self.sent_vec_dim = sent_hidden_dims[-1] * 2
 
     self.embedder = Embeddings(embed_dim, vocab_size, reuse=self.reuse)
     if embed_pret_file:
