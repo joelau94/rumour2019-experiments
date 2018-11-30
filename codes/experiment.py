@@ -1,6 +1,7 @@
 import cPickle as pkl
 import math
 import os
+import pprint
 
 import tensorflow as tf
 import numpy as np
@@ -62,6 +63,7 @@ class Experiment(object):
 
   def __init__(self, config):
     self.config = config
+    utils.print_log('Config:\n' + pprint.pformat(config))
 
   def train(self):
     train_data = data.Dataset(self.config['train_data_file'],
@@ -91,10 +93,13 @@ class Experiment(object):
       loss = self.config['sdqc_weight'] * model.sdqc_loss + \
           (1. - self.config['sdqc_weight']) * model.veracity_loss
 
-      optimizer = tf.train.AdamOptimizer(
+      # optimizer = tf.train.AdamOptimizer(
+      #     learning_rate=self.config['lr'],
+      #     beta1=self.config['beta1'],
+      #     beta2=self.config['beta2'],
+      #     epsilon=self.config['eps'])
+      optimizer = tf.train.AdadeltaOptimizer(
           learning_rate=self.config['lr'],
-          beta1=self.config['beta1'],
-          beta2=self.config['beta2'],
           epsilon=self.config['eps'])
       gradients = optimizer.compute_gradients(loss)
       gradients = [(tf.clip_by_value(grad, -1., 1.), var)
