@@ -225,3 +225,94 @@ class Experiment(object):
       utils.print_log('SDQC Task Acc = {}, Veracity Task Acc = {}'
                       .format(float(sdqc_corr) / sdqc_total,
                               float(veracity_corr) / veracity_total))
+
+  def sample(self, raw_data_file, output_file):
+
+    data_file = '.'.join(os.path.splitext(raw_data_file)[:-1] +
+                         ['-temp.pkl'])
+    output_file = '.'.join(os.path.splitext(raw_data_file)[:-1] +
+                           ['-sample.txt'])
+    data.preprocess_dev_test(raw_data_file,
+                             self.config['dicts_file'],
+                             data_file)
+    test_data = data.Dataset(data_file, shuffle=False)
+    test_graph = tf.Graph()
+
+    with tf.Session(graph=test_graph) as sess:
+      model = models.RumourDetectModel(
+          embed_dim=self.config['embed_dim'],
+          vocab_size=self.config['vocab_size'],
+          sent_hidden_dims=self.config['sent_hidden_dims'],
+          branch_hidden_dims=self.config['branch_hidden_dims'],
+          sdqc_attn_dim=self.config['sdqc_attn_dim'],
+          veracity_attn_dim=self.config['veracity_attn_dim'],
+          sdqc_hidden_dim=self.config['sdqc_hidden_dim'],
+          veracity_hidden_dim=self.config['veracity_hidden_dim'],
+          embed_pret_file=self.config['embed_pret_file'],
+          dicts_file=self.config['dicts_file'],
+          keep_prob=1.0,
+          reuse=None)
+
+      model(is_train=False)
+      sess.run(tf.global_variables_initializer())
+      if self.config['embed_pret_file']:
+        model.embedder.init_pretrained_emb(sess)
+
+      saver = tf.train.Saver(max_to_keep=self.config['max_ckpts'])
+      ckpt_dir = os.path.dirname(self.config['ckpt'])
+      ckpt = tf.train.latest_checkpoint(ckpt_dir)
+      saver.restore(sess, ckpt)
+
+      utils.print_log('Sampling from {} ...'.format(data_file))
+      batch_num = int(math.floor(len(test_data.records) /
+                                 self.config['batch_size']))
+
+      sdqc_corr, sdqc_total, veracity_corr, veracity_total = 0, 0, 0, 0
+      predictions = []  # [list of [[sdqc labels], veracity label]]
+      for _ in range(batch_num):
+        X, X_pret, Y_sdqc, Y_veracity, sent_length, branch_length = \
+            test_data.get_next(batch_num)
+        c1, t1, pred1, c2, t2, pred2 = sess.run(
+            [model.sdqc_correct_count,
+             model.sdqc_total_count,
+             model.sdqc_predictions,
+             model.veracity_correct_count,
+             model.veracity_total_count,
+             model.veracity_predictions],
+            feed_dict={
+                model.word_ids: X,
+                model.word_ids_pret: X_pret,
+                model.sdqc_labels: Y_sdqc,
+                model.veracity_labels: Y_veracity,
+                model.sent_length: sent_length,
+                model.branch_length: branch_length,
+            })
+        sdqc_corr += c1
+        sdqc_total += t1
+        veracity_corr += c2
+        veracity_total += t2
+
+        for sdqc, ver, l in \
+                zip(pred1.tolist(), pred2.tolist(), branch_length.tolist()):
+          predictions.append([sdqc[:l], ver])
+
+      utils.print_log('SDQC Task Acc = {}, Veracity Task Acc = {}'
+                      .format(float(sdqc_corr) / sdqc_total,
+                              float(veracity_corr) / veracity_total))
+
+      raw_threads = open(raw_data_file, 'r').read().strip().split('\n\n')
+      fout = open(output_file, 'w')
+      for threads, preds in zip(raw_threads, predictions):
+        orig_tweet = threads[0].strip().split('|||')
+        fout.write('|||'.join(
+            [orig_tweet[0],
+             orig_tweet[1],
+             preds[0][0],
+             orig_tweet[2],
+             preds[1]]) + '\n')
+        for tweet, pred in zip(threads[1:], preds[0][1:]):
+          fout.write('|||'.join(
+              [tweet[0],
+               tweet[1],
+               pred]) + '\n')
+        fout.write('\n')
