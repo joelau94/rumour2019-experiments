@@ -93,13 +93,10 @@ class Experiment(object):
       loss = self.config['sdqc_weight'] * model.sdqc_loss + \
           (1. - self.config['sdqc_weight']) * model.veracity_loss
 
-      # optimizer = tf.train.AdamOptimizer(
-      #     learning_rate=self.config['lr'],
-      #     beta1=self.config['beta1'],
-      #     beta2=self.config['beta2'],
-      #     epsilon=self.config['eps'])
-      optimizer = tf.train.AdadeltaOptimizer(
+      optimizer = tf.train.AdamOptimizer(
           learning_rate=self.config['lr'],
+          beta1=self.config['beta1'],
+          beta2=self.config['beta2'],
           epsilon=self.config['eps'])
       gradients = optimizer.compute_gradients(loss)
       gradients = [(tf.clip_by_value(grad, -1., 1.), var)
