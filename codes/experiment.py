@@ -311,14 +311,14 @@ class Experiment(object):
         fout.write('|||'.join([
             orig_tweet[0],
             orig_tweet[1],
-            dicts['t2i'][preds[0][0]],
+            dicts['i2t'][preds[0][0]],
             orig_tweet[2],
-            dicts['v2i'][preds[1]]
+            dicts['i2v'][preds[1]]
         ]) + '\n')
         for tweet, pred in zip(threads[1:], preds[0][1:]):
           fout.write('|||'.join([
               tweet[0],
               tweet[1],
-              dicts['t2i'][pred]
+              dicts['i2t'][pred]
           ]) + '\n')
         fout.write('\n')
