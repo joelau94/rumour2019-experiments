@@ -305,7 +305,7 @@ class RumourDetectModel(object):
     sent_vecs = tf.reshape(sent_vecs,
                            [batch_size, thread_max_len, self.sent_vec_dim])
 
-    sent_vecs = self.branch_encoder(sent_vecs, self.branch_length)
+    sent_vecs_encoded = self.branch_encoder(sent_vecs, self.branch_length)
 
     # (batch, len)
     branch_masks = tf.sequence_mask(self.branch_length, dtype=tf.float32)
@@ -315,7 +315,7 @@ class RumourDetectModel(object):
         self.sdqc_probabilities, \
         self.sdqc_correct_count, \
         self.sdqc_total_count = \
-        self.sdqc_classifier(sent_vecs,
+        self.sdqc_classifier(sent_vecs_encoded,
                              self.sdqc_labels,
                              branch_masks)
 
