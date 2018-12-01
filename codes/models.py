@@ -189,14 +189,18 @@ class SdqcClassifier(object):
     self.probabilities = tf.nn.softmax(scores, axis=-1)
     self.predictions = tf.argmax(self.probabilities, axis=-1)
 
-    self.loss = tf.contrib.seq2seq.sequence_loss(scores, labels, masks)
+    self.loss = tf.contrib.seq2seq.sequence_loss(
+        scores,
+        labels,
+        masks,
+        average_across_timesteps=True,
+        average_across_batch=True
+    )
 
     correct_count = tf.reduce_sum(
         tf.cast(tf.math.equal(self.predictions, labels),
                 dtype=tf.float32) * masks)
     total_count = tf.reduce_sum(masks)
-
-    self.loss = tf.reduce_sum(self.loss) / total_count
 
     return self.loss, self.predictions, self.probabilities, \
         correct_count, total_count
