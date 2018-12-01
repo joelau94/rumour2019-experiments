@@ -301,20 +301,24 @@ class Experiment(object):
                       .format(float(sdqc_corr) / sdqc_total,
                               float(veracity_corr) / veracity_total))
 
+      dicts = pkl.load(open(self.config['dicts_file'], 'rb'))
+
       raw_threads = open(raw_data_file, 'r').read().strip().split('\n\n')
       fout = open(output_file, 'w')
       for threads, preds in zip(raw_threads, predictions):
         threads = threads.strip().split('\n')
         orig_tweet = threads[0].strip().split('|||')
-        fout.write('|||'.join(
-            [orig_tweet[0],
-             orig_tweet[1],
-             preds[0][0],
-             orig_tweet[2],
-             preds[1]]) + '\n')
+        fout.write('|||'.join([
+            orig_tweet[0],
+            orig_tweet[1],
+            dicts['t2i'][preds[0][0]],
+            orig_tweet[2],
+            dicts['v2i'][preds[1]]
+        ]) + '\n')
         for tweet, pred in zip(threads[1:], preds[0][1:]):
-          fout.write('|||'.join(
-              [tweet[0],
-               tweet[1],
-               pred]) + '\n')
+          fout.write('|||'.join([
+              tweet[0],
+              tweet[1],
+              dicts['t2i'][pred]
+          ]) + '\n')
         fout.write('\n')
