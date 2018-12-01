@@ -304,6 +304,7 @@ class Experiment(object):
       raw_threads = open(raw_data_file, 'r').read().strip().split('\n\n')
       fout = open(output_file, 'w')
       for threads, preds in zip(raw_threads, predictions):
+        threads = threads.strip().split('\n')
         orig_tweet = threads[0].strip().split('|||')
         fout.write('|||'.join(
             [orig_tweet[0],
