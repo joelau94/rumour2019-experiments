@@ -228,7 +228,7 @@ class Experiment(object):
                       .format(float(sdqc_corr) / sdqc_total,
                               float(veracity_corr) / veracity_total))
 
-  def sample(self, raw_data_file, output_file):
+  def sample(self, raw_data_file):
 
     data_file = '.'.join(os.path.splitext(raw_data_file)[:-1] +
                          ['-temp.pkl'])
