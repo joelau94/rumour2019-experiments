@@ -316,6 +316,7 @@ class Experiment(object):
             dicts['i2v'][preds[1]]
         ]) + '\n')
         for tweet, pred in zip(threads[1:], preds[0][1:]):
+          tweet = tweet.strip().split('|||')
           fout.write('|||'.join([
               tweet[0],
               tweet[1],
