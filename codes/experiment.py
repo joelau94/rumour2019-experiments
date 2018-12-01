@@ -149,7 +149,7 @@ class Experiment(object):
           sdqc_corr, sdqc_total, veracity_corr, veracity_total = 0, 0, 0, 0
           for _ in range(batch_num):
             X, X_pret, Y_sdqc, Y_veracity, sent_length, branch_length = \
-                dev_data.get_next(batch_num)
+                dev_data.get_next(self.config['batch_size'])
             c1, t1, c2, t2 = sess.run(
                 [model.sdqc_correct_count, model.sdqc_total_count,
                  model.veracity_correct_count, model.veracity_total_count],
@@ -207,7 +207,7 @@ class Experiment(object):
       sdqc_corr, sdqc_total, veracity_corr, veracity_total = 0, 0, 0, 0
       for _ in range(batch_num):
         X, X_pret, Y_sdqc, Y_veracity, sent_length, branch_length = \
-            test_data.get_next(batch_num)
+            test_data.get_next(self.config['batch_size'])
         c1, t1, c2, t2 = sess.run(
             [model.sdqc_correct_count, model.sdqc_total_count,
              model.veracity_correct_count, model.veracity_total_count],
@@ -272,7 +272,7 @@ class Experiment(object):
       predictions = []  # [list of [[sdqc labels], veracity label]]
       for _ in range(batch_num):
         X, X_pret, Y_sdqc, Y_veracity, sent_length, branch_length = \
-            test_data.get_next(batch_num)
+            test_data.get_next(self.config['batch_size'])
         c1, t1, pred1, c2, t2, pred2 = sess.run(
             [model.sdqc_correct_count,
              model.sdqc_total_count,
