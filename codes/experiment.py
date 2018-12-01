@@ -120,6 +120,9 @@ class Experiment(object):
 
       utils.print_log('Training ...')
       global_steps = sess.run(self.global_step)
+
+      sdqc_acc, veracity_acc = 0, 0
+
       while global_steps <= self.config['max_steps']:
 
         X, X_pret, Y_sdqc, Y_veracity, sent_length, branch_length = \
@@ -140,8 +143,6 @@ class Experiment(object):
           utils.print_log('Step {}: Loss = {}'.format(global_steps, step_loss))
 
         if global_steps % self.config['save_interval'] == 0:
-          train_saver.save(sess, self.config['ckpt'],
-                           global_step=global_steps)
 
           # validation
           batch_num = int(math.floor(len(dev_data.records) /
@@ -166,10 +167,19 @@ class Experiment(object):
             veracity_corr += c2
             veracity_total += t2
 
+          new_sdqc_acc = float(sdqc_corr) / sdqc_total
+          new_veracity_acc = float(veracity_corr) / veracity_total
+
           utils.print_log('Step {}: SDQC Task Acc = {}, Veracity Task Acc = {}'
                           .format(global_steps,
-                                  float(sdqc_corr) / sdqc_total,
-                                  float(veracity_corr) / veracity_total))
+                                  new_sdqc_acc,
+                                  new_veracity_acc))
+          if new_sdqc_acc > sdqc_acc and new_veracity_acc > veracity_acc:
+            sdqc_acc = new_sdqc_acc
+            veracity_acc = new_veracity_acc
+            utils.print_log('Saving model {}'.format(global_steps))
+            train_saver.save(sess, self.config['ckpt'],
+                             global_step=global_steps)
 
   def test(self):
     test_data = data.Dataset(self.config['test_data_file'], shuffle=False)
