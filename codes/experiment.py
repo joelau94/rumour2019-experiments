@@ -230,10 +230,9 @@ class Experiment(object):
 
   def sample(self, raw_data_file):
 
-    data_file = '.'.join(os.path.splitext(raw_data_file)[:-1] +
-                         ['-temp.pkl'])
-    output_file = '.'.join(os.path.splitext(raw_data_file)[:-1] +
-                           ['-sample.txt'])
+    data_file = '.'.join(os.path.splitext(raw_data_file)[:-1]) + '-temp.pkl'
+    output_file = '.'.join(os.path.splitext(raw_data_file)[:-1]) + \
+        '-sample.txt'
     data.preprocess_dev_test(raw_data_file,
                              self.config['dicts_file'],
                              data_file)
