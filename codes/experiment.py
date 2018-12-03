@@ -174,7 +174,7 @@ class Experiment(object):
                           .format(global_steps,
                                   new_sdqc_acc,
                                   new_veracity_acc))
-          if new_sdqc_acc > sdqc_acc and new_veracity_acc > veracity_acc:
+          if new_sdqc_acc > sdqc_acc or new_veracity_acc > veracity_acc:
             sdqc_acc = new_sdqc_acc
             veracity_acc = new_veracity_acc
             utils.print_log('Saving model {}'.format(global_steps))
