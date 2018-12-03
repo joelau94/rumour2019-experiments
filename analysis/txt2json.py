@@ -47,6 +47,12 @@ def sdqc_confusion(ref, hyp):
   matrix = defaultdict(lambda: defaultdict(int))
   for k in ref.keys():
     matrix[ref[k]][hyp[k]] += 1
+  total = len(ref.keys())
+  corr = matrix['support']['support'] + \
+      matrix['deny']['deny'] + \
+      matrix['query']['query'] + \
+      matrix['comment']['comment']
+  sys.stdout.write('Task A: Acc={}\n'.format(float(corr) / total))
   sys.stdout.write('ref | hyp\tsupport\tdeny\tquery\tcomment\n')
   for r in ['support', 'deny', 'query', 'comment']:
     sys.stdout.write('{}\t{}\t{}\t{}\t{}\n'
@@ -61,6 +67,11 @@ def veracity_confusion(ref, hyp):
   matrix = defaultdict(lambda: defaultdict(int))
   for k in ref.keys():
     matrix[ref[k]][hyp[k]] += 1
+  total = len(ref.keys())
+  corr = matrix['true']['true'] + \
+      matrix['false']['false'] + \
+      matrix['unverified']['unverified']
+  sys.stdout.write('Task B: Acc={}\n'.format(float(corr) / total))
   sys.stdout.write('ref | hyp\ttrue\tfalse\tunverified\n')
   for r in ['true', 'false', 'unverified']:
     sys.stdout.write('{}\t{}\t{}\t{}\n'
@@ -74,9 +85,9 @@ def main():
   prediction_file, id_file, answer_file = sys.argv[1:4]
   sdqc_ref, sdqc_hyp, veracity_ref, veracity_hyp = \
       read_text(prediction_file, id_file)
-  write_answer(sdqc_hyp, veracity_hyp, answer_file)
   sdqc_confusion(sdqc_ref, sdqc_hyp)
   veracity_confusion(veracity_ref, veracity_hyp)
+  write_answer(sdqc_hyp, veracity_hyp, answer_file)
 
 
 if __name__ == '__main__':
