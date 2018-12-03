@@ -68,3 +68,16 @@ def veracity_confusion(ref, hyp):
                              matrix[r]['true'],
                              matrix[r]['false'],
                              matrix[r]['unverified']))
+
+
+def main():
+  prediction_file, id_file, answer_file = sys.argv[1:4]
+  sdqc_ref, sdqc_hyp, veracity_ref, veracity_hyp = \
+      read_text(prediction_file, id_file)
+  write_answer(sdqc_hyp, veracity_hyp, answer_file)
+  sdqc_confusion(sdqc_ref, sdqc_hyp)
+  veracity_confusion(veracity_ref, veracity_hyp)
+
+
+if __name__ == '__main__':
+  main()
