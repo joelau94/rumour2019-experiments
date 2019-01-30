@@ -283,13 +283,14 @@ class Experiment(object):
       for _ in range(batch_num):
         X, X_pret, Y_sdqc, Y_veracity, sent_length, branch_length = \
             test_data.get_next(self.config['batch_size'])
-        c1, t1, pred1, c2, t2, pred2 = sess.run(
+        c1, t1, pred1, c2, t2, pred2, vprobs = sess.run(
             [model.sdqc_correct_count,
              model.sdqc_total_count,
              model.sdqc_predictions,
              model.veracity_correct_count,
              model.veracity_total_count,
-             model.veracity_predictions],
+             model.veracity_predictions,
+             model.veracity_probabilities],
             feed_dict={
                 model.word_ids: X,
                 model.word_ids_pret: X_pret,
@@ -303,9 +304,15 @@ class Experiment(object):
         veracity_corr += c2
         veracity_total += t2
 
-        for sdqc, ver, l in \
-                zip(pred1.tolist(), pred2.tolist(), branch_length.tolist()):
-          predictions.append([sdqc[:l], ver])
+        for sdqc, vprob, l in \
+                zip(pred1.tolist(), vprobs.tolist(), branch_length.tolist()):
+          if vprob[dicts['i2v']['true']] >= vprob[dicts['i2v']['false']]:
+            ver = 'true'
+            conf = vprob[dicts['i2v']['true']]
+          else:
+            ver = 'false'
+            conf = vprob[dicts['i2v']['false']]
+          predictions.append([sdqc[:l], ver, conf])
 
       utils.print_log('SDQC Task Acc = {}, Veracity Task Acc = {}'
                       .format(float(sdqc_corr) / sdqc_total,
@@ -323,7 +330,8 @@ class Experiment(object):
             orig_tweet[1],
             dicts['i2t'][preds[0][0]],
             orig_tweet[2],
-            dicts['i2v'][preds[1]]
+            preds[1],
+            preds[2]
         ]) + '\n')
         for tweet, pred in zip(threads[1:], preds[0][1:]):
           tweet = tweet.strip().split('|||')

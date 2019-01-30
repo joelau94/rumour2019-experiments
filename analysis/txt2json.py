@@ -18,11 +18,13 @@ def read_text(prediction_file, id_file):
     else:
       line = line.strip().split('|||')
       twid = fid.readline().strip()
-      if len(line) == 5:
-        veracity_ref[twid] = line[3].strip()
-        veracity_hyp[twid] = line[4].strip()
-        sdqc_ref[twid] = line[1].strip()
-        sdqc_hyp[twid] = line[2].strip()
+      if len(line) == 6:
+        if twid not in veracity_hyp or \
+            veracity_hyp[twid][1] < float(line[5].strip()):
+          veracity_ref[twid] = line[3].strip()
+          veracity_hyp[twid] = [line[4].strip(), float(line[5].strip())]
+          sdqc_ref[twid] = line[1].strip()
+          sdqc_hyp[twid] = line[2].strip()
       elif len(line) == 3:
         sdqc_ref[twid] = line[1].strip()
         sdqc_hyp[twid] = line[2].strip()
@@ -31,11 +33,6 @@ def read_text(prediction_file, id_file):
 
 
 def write_answer(sdqc_hyp, veracity_hyp, answer_file):
-  for k, v in veracity_hyp.iteritems():
-    if v == 'unverified':
-      veracity_hyp[k] = ['false', 0.0]
-    else:
-      veracity_hyp[k] = [v, 1.0]
   ans = {
       'subtaskaenglish': sdqc_hyp,
       'subtaskbenglish': veracity_hyp
@@ -66,7 +63,7 @@ def sdqc_confusion(ref, hyp):
 def veracity_confusion(ref, hyp):
   matrix = defaultdict(lambda: defaultdict(int))
   for k in ref.keys():
-    matrix[ref[k]][hyp[k]] += 1
+    matrix[ref[k]][hyp[k][0]] += 1
   total = len(ref.keys())
   corr = matrix['true']['true'] + \
       matrix['false']['false'] + \
