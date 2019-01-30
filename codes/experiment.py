@@ -332,7 +332,7 @@ class Experiment(object):
             dicts['i2t'][preds[0][0]],
             orig_tweet[2],
             preds[1],
-            preds[2]
+            str(preds[2])
         ]) + '\n')
         for tweet, pred in zip(threads[1:], preds[0][1:]):
           tweet = tweet.strip().split('|||')
