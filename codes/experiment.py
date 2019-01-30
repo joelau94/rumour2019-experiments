@@ -309,12 +309,12 @@ class Experiment(object):
 
         for sdqc, vprob, l in \
                 zip(pred1.tolist(), vprobs.tolist(), branch_length.tolist()):
-          if vprob[dicts['i2v']['true']] >= vprob[dicts['i2v']['false']]:
+          if vprob[dicts['v2i']['true']] >= vprob[dicts['v2i']['false']]:
             ver = 'true'
-            conf = vprob[dicts['i2v']['true']]
+            conf = vprob[dicts['v2i']['true']]
           else:
             ver = 'false'
-            conf = vprob[dicts['i2v']['false']]
+            conf = vprob[dicts['v2i']['false']]
           predictions.append([sdqc[:l], ver, conf])
 
       utils.print_log('SDQC Task Acc = {}, Veracity Task Acc = {}'
