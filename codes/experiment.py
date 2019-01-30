@@ -247,6 +247,9 @@ class Experiment(object):
                              self.config['dicts_file'],
                              data_file)
     test_data = data.Dataset(data_file, shuffle=False)
+
+    dicts = pkl.load(open(self.config['dicts_file'], 'rb'))
+
     test_graph = tf.Graph()
 
     with tf.Session(graph=test_graph) as sess:
@@ -317,8 +320,6 @@ class Experiment(object):
       utils.print_log('SDQC Task Acc = {}, Veracity Task Acc = {}'
                       .format(float(sdqc_corr) / sdqc_total,
                               float(veracity_corr) / veracity_total))
-
-      dicts = pkl.load(open(self.config['dicts_file'], 'rb'))
 
       raw_threads = open(raw_data_file, 'r').read().strip().split('\n\n')
       fout = open(output_file, 'w')
